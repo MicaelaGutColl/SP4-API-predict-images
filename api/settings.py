@@ -8,7 +8,7 @@ UPLOAD_FOLDER = "static/uploads/"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # We will store user feedback on this file
-FEEDBACK_FILEPATH = "feedback/feedback"
+FEEDBACK_FILEPATH = "feedback/feedback.txt"
 os.makedirs(os.path.basename(FEEDBACK_FILEPATH), exist_ok=True)
 
 # REDIS settings
