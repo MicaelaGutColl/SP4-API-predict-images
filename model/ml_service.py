@@ -9,7 +9,7 @@ from tensorflow.keras.preprocessing import image
 
 # escuhca la queue siempre
 #  
-#  TODO
+
 # Connect to Redis and assign to variable `db``
 # Make use of settings.py module to get Redis settings like host, port, etc.
 db = redis.Redis(
@@ -17,9 +17,8 @@ db = redis.Redis(
     port=settings.REDIS_PORT, 
     db=settings.REDIS_DB_ID
 )
-db.ping() # si ping da false va a explotar, porque no te conectas a redis, si da True está ok!
 
-# TODO
+
 # Load your ML model and assign to variable `model`
 
 model = resnet50.ResNet50(include_top=True, weights="imagenet")

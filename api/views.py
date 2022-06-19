@@ -14,15 +14,22 @@ from flask import (
     url_for,
 )
 
+# GET & POST
+# ej: https://www.pythondiario.com/articulos.html?tag=Flask
+
+# POST: envía la información ocultándola del usuario 
+# ej: https://www.pythondiario.com/articulos.html
+
+
 router = Blueprint("app_router", __name__, template_folder="templates")
 
-
+# get() recibe como parametro lo que queremos recuperar
 @router.route("/", methods=["GET"])
 def index():
     """
     Index endpoint, renders our HTML code.
     """
-    return render_template("index.html")
+    return render_template("index.html") # renderizar un template con un formulario
 
 
 @router.route("/", methods=["POST"])
@@ -31,6 +38,11 @@ def upload_image():
     Function used in our frontend so we can upload and show an image.
     When it receives an image from the UI, it also calls our ML model to
     get and display the predictions.
+    # REQUEST
+    To access incoming request data, you can use the global request object. 
+    Flask parses incoming request data
+    for you and gives you access to it through that global object.
+    The request object is an instance of a Request  
     """
     # No file received, show basic UI
     # si no es tipo file  --- muestra lo de flask
@@ -44,6 +56,10 @@ def upload_image():
     if file.filename == "":
         flash("No image selected for uploading")
         return redirect(request.url)
+    # Flashes a message to the next request. In order to remove the flashed message
+    # from the session and to display it to the user, 
+    # the template has to call get_flashed_messages (SE USA EN HTML)
+
 
     # File received and it's an image, we must show it and get predictions
     if file and utils.allowed_file(file.filename):
@@ -54,10 +70,16 @@ def upload_image():
         #   2. Store image (os.path so as not to remplace images if they are the same)
         if not os.path.exists(os.path.join(settings.UPLOAD_FOLDER, newfile)):
             file.save(os.path.join(settings.UPLOAD_FOLDER, newfile)) 
+        # Join two or more pathname components, inserting '/' as needed. 
+        # If any component is an absolute path, all previous 
+        # path components will be discarded.
+        # An empty last part will result in a path that ends with a separator
+        
         #   3. Send the file to be processed by the `model` service
         #      Hint: Use middleware.model_predict() for sending jobs to model
         #            service using Redis.
-        model_pred, model_score = model_predict(newfile)        
+        model_pred, model_score = model_predict(newfile)
+        model_pred = model_pred.replace("_"," ").title()        
         #   4. Update `context` dict with the corresponding values
         model_score = round(model_score*100, 2)
         context = {
@@ -68,11 +90,10 @@ def upload_image():
         }        
         
         # Update `render_template()` parameters as needed
-        # TODO
 
-        return render_template(
-            "index.html", filename=newfile, context=context
-        )
+
+        return render_template("index.html", filename=newfile, context=context)
+
     # File received and but it isn't an image
     else:
         flash("Allowed image types are -> png, jpg, jpeg, gif")
@@ -84,9 +105,7 @@ def display_image(filename):
     """
     Display uploaded image in our UI.
     """
-    return redirect(
-        url_for("static", filename="uploads/" + filename), code=301
-    )
+    return redirect(url_for("static", filename="uploads/" + filename), code=301)
 
 
 @router.route("/predict", methods=["POST"])
