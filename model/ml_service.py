@@ -41,19 +41,12 @@ def predict(image_names):
     """
     images = []
 
-    if type(image_names) == str:
-        img_path = os.path.join(settings.UPLOAD_FOLDER, image_names)
+    # Loading images and preprocess
+    for image_name in image_names:
+        img_path = os.path.join(settings.UPLOAD_FOLDER, image_name)
         img = image.load_img(img_path, target_size=(224, 224))
         img = image.img_to_array(img)
         images.append(img)
-        
-    else:
-        # Loading images and preprocess
-        for image_name in image_names:
-            img_path = os.path.join(settings.UPLOAD_FOLDER, image_name)
-            img = image.load_img(img_path, target_size=(224, 224))
-            img = image.img_to_array(img)
-            images.append(img)
 
     images = np.array(images)
     images = resnet50.preprocess_input(images)
