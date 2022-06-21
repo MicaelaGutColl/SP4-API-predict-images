@@ -8,7 +8,7 @@ class TestMLService(unittest.TestCase):
         ml_service.settings.UPLOAD_FOLDER = "tests"
         class_name, pred_probability = ml_service.predict(["dog.jpeg"])
         self.assertEqual(class_name, ["Eskimo_dog"])
-        self.assertAlmostEqual(pred_probability, 0.9346, 5)
+        self.assertAlmostEqual(pred_probability[0], 0.9346, 5)
 
 
 if __name__ == "__main__":
