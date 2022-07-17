@@ -1,16 +1,24 @@
 import time
-
 import settings
+import redis
+import json
+import os
+from tensorflow.keras.applications import resnet50
+from tensorflow.keras.preprocessing import image
+import numpy as np
 
-
-# TODO
-# Connect to Redis and assign to variable `db``
+# Connect to Redis 
 # Make use of settings.py module to get Redis settings like host, port, etc.
-db = None
+db = redis.Redis(
+    host = settings.REDIS_IP,
+    port = settings.REDIS_PORT,
+    db = settings.REDIS_DB_ID,
+    )
 
-# TODO
-# Load your ML model and assign to variable `model`
-model = None
+
+# Load ML model 
+model = resnet50.ResNet50(include_top=True, weights="imagenet")
+
 
 
 def predict(image_name):
@@ -29,10 +37,18 @@ def predict(image_name):
         Model predicted class as a string and the corresponding confidence
         score as a number.
     """
-    # TODO
-
-    return None, None
-
+    
+    image_name = image.load_img(os.path.join(settings.UPLOAD_FOLDER, image_name), target_size=(224, 224))
+    image_array = image.img_to_array(image_name)
+    image_expand = np.expand_dims(image_array, axis=0)
+    image_preproce = resnet50.preprocess_input(image_expand)
+    preds_resnet50 = model.predict(image_preproce)
+    preds_decode = resnet50.decode_predictions(preds_resnet50, top=1)
+    class_name = preds_decode[0][0][1]
+    pred_probability = round(float(preds_decode[0][0][2]), 4)
+    
+    return tuple([class_name, pred_probability])
+    
 
 def classify_process():
     """
@@ -46,26 +62,16 @@ def classify_process():
     received, then, run our ML model to get predictions.
     """
     while True:
-        # Inside this loop you should add the code to:
-        #   1. Take a new job from Redis
-        #   2. Run your ML model on the given data
-        #   3. Store model prediction in a dict with the following shape:
-        #      {
-        #         "prediction": str,
-        #         "score": float,
-        #      }
-        #   4. Store the results on Redis using the original job ID as the key
-        #      so the API can match the results it gets to the original job
-        #      sent
-        # Hint: You should be able to successfully implement the communication
-        #       code with Redis making use of functions `brpop()` and `set()`.
-        # TODO
-
-        # Don't forget to sleep for a bit at the end
+        _, data_json = db.brpop(settings.REDIS_QUEUE)
+        data_dict = json.loads(data_json) # convert JSON str to a dict of Python
+        prediction, score = predict(data_dict["image_name"])
+        predict_dict = {"prediction":prediction , "score":score}
+        db.set(data_dict["id"], json.dumps(predict_dict)) # serialize python objects to str
+        
+        # sleep for a bit at the end
         time.sleep(settings.SERVER_SLEEP)
-
+        
 
 if __name__ == "__main__":
-    # Now launch process
     print("Launching ML service...")
     classify_process()
