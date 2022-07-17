@@ -1,41 +1,51 @@
 <!doctype html>
-<title>ML API</title>
-<h2>Select a file to upload</h2>
-<p>
+
+<head>
+    <title>Micaela GC Mi First ML API</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+</head>
+
+<body>
+    <img src="{{ url_for('static', filename='coloinvertido.jpg')}}" width="400px" height="400px">
+    <p id="text1"><i><b> Upload your image and discover the magic of AI Image Classifier</i></b></p>
+    <p>
     {% with messages = get_flashed_messages() %}
-      {% if messages %}
+        {% if messages %}
         <ul>
         {% for message in messages %}
-          <li>{{ message }}</li>
+            <li>{{ message }}</li>
         {% endfor %}
         </ul>
-      {% endif %}
+        {% endif %}
     {% endwith %}
-</p>
-{% if filename %}
+    </p>
+    {% if filename %}
     <div>
-        <img src="{{ url_for('app_router.display_image', filename=filename) }}">
+        <img src="{{ url_for('app_router.display_image', filename=filename)}}">
     </div>
     {% if context['prediction'] %}
         <div class="row">
             <div class="col-25">
-            <label for="subject">Predicted class: {{ context['prediction'] }} </label><br>
-            <label for="subject">Score: {{ context['score'] }} </label>
+           <b> <label id="predict" for="subject" style="font-family: "Helvetica Neue";>Predicted class: {{ context['prediction'] }} </label></b><br>
+           <b> <label id="score" for="subject" style="font-family: "Helvetica Neue";>Score: {{ context['score']}} % </label></b>
             </div>
         </div>
         <form id="form" method="POST" action="/feedback">
-            <button type="submit">Report incorrect answer</button>
+            <center><button id="report" type="submit">Report incorrect answer</button></center>
             <input name="report" style="visibility: hidden;" value="{'filename': '{{ filename }}', 'prediction': '{{ context['prediction'] }}', 'score': {{ context['score'] }} }"/>
         </form>
     {% endif %}
-{% endif %}
-<form method="post" action="/" enctype="multipart/form-data">
+    {% endif %}
+    <form method="post" action="/" enctype="multipart/form-data">
     <dl>
         <p>
-            <input type="file" name="file" autocomplete="off" required>
+            <center> <input id="file" type="file" name="file" autocomplete="off" required></center>
+            
         </p>
     </dl>
     <p>
-        <input type="submit" value="Submit">
+        <center>  <input id="submit" type="submit" value="SUBMIT"></center>
     </p>
-</form>
+    </form>
+
+</body>
